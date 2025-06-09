@@ -79,8 +79,50 @@ def create_patch_dataset():
     
     print('Loading of train and mask datasets done.')
     print('Saving to .npy files done.')
-    
+
     return train_arrays_list, mask_arrays_list, patient_list_img, patient_list_mask
+
+
+# New helper to load entire 3D volumes without patch extraction
+def load_full_dataset(target_shape=(128, 128, 128)):
+    """Load all training volumes and masks resized to a common shape.
+
+    Parameters
+    ----------
+    target_shape : tuple of int, optional
+        Desired output shape in (depth, height, width). All volumes and masks
+        will be resized to this shape for training.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        Arrays containing volumes and masks with shape
+        (n_samples, depth, height, width, 1).
+    """
+
+    train_files, mask_files = get_filenames()
+    train_data_path = os.path.join(data_path, 'volume/')
+    mask_data_path = os.path.join(data_path, 'mask/')
+
+    volumes = []
+    masks = []
+    for scan_fname, mask_fname in zip(train_files, mask_files):
+        img_train = sitk.ReadImage(os.path.join(train_data_path, scan_fname))
+        vol = sitk.GetArrayFromImage(img_train)
+        img_mask = sitk.ReadImage(os.path.join(mask_data_path, mask_fname))
+        mask = sitk.GetArrayFromImage(img_mask)
+
+        if vol.shape != target_shape:
+            vol = resize(vol, target_shape, mode='constant', preserve_range=True)
+        if mask.shape != target_shape:
+            mask = resize(mask, target_shape, mode='constant', preserve_range=True, order=0)
+
+        vol = vol.astype('float32') / 255.
+        mask = mask.astype('float32') / 255.
+        volumes.append(np.expand_dims(vol, axis=3))
+        masks.append(np.expand_dims(mask, axis=3))
+
+    return np.array(volumes), np.array(masks)
 
 
 

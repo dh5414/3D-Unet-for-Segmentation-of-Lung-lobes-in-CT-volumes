@@ -7,6 +7,8 @@ I uploaded the .py files and a Google Colab notebook where I trained the 3d-Unet
 Files:
 
 1. Data3D.py: Data Preprocessing
+   - `load_full_dataset`: load entire 3D volumes and masks resized to a common
+     shape for training without patch extraction.
 
 2. 3D UNet.py: model design, training, testing and evaluation.
 
@@ -37,7 +39,4 @@ Patches of size 128x128x128:
 7. Loss and Loss Validation Plots
 8. Comparing predicted segmantation with scans and masks
 9. Future work for improving results
-
-
-
 Keras/TensorFlow API
