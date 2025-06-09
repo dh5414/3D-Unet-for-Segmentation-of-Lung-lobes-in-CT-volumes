@@ -14,7 +14,7 @@ from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras import backend as K
 from keras.regularizers import l2
 from keras.utils import plot_model
-from data3D import get_filenames, create_patch_dataset
+from data3D import get_filenames, create_patch_dataset, load_full_dataset
 
 
 
@@ -86,7 +86,7 @@ def train():
     print('-'*30)
     
     train_dirs, mask_dirs = get_filenames()
-    train_arrays_list, mask_arrays_list, patient_list = create_patch_dataset()
+    volumes, masks = load_full_dataset(target_shape=(img_depth, img_rows, img_cols))
 
     print('-'*30)
     print('Creating and compiling model...')
@@ -108,15 +108,13 @@ def train():
     print('Fitting model...')
     print('-'*30)
  
-    # for list of arrays as input
-    # model.train_on_batch(train_arrays_list, mask_arrays_list)
-    #remove fit()
-    model.fit(np.array(train_arrays_list), np.array(mask_arrays_list), 
-              batch_size=1, 
-              epochs=50, 
-              verbose=1, 
-              shuffle=True, 
-              validation_split=0.10, 
+    # Train directly on full volumes
+    model.fit(volumes, masks,
+              batch_size=1,
+              epochs=50,
+              verbose=1,
+              shuffle=True,
+              validation_split=0.10,
               callbacks=[model_checkpoint, csv_logger])
 
 
@@ -124,4 +122,3 @@ def train():
     print('-'*30)
     print('Training finished')
     print('-'*30)
-    
